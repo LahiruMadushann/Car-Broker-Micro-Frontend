@@ -2,10 +2,11 @@ import ReactDOM from "react-dom/client";
 
 import "./index.css";
 import Header from "./components/Header";
+import HomePage from "./pages/HomePage";
 
 const App = () => (
   <div>
-    <Header />
+    <HomePage />
   </div>
 );
 
