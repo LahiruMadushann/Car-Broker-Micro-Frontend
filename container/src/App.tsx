@@ -1,11 +1,11 @@
 import ReactDOM from "react-dom/client";
 
 import "./index.css";
+import Header from "./components/Header";
 
 const App = () => (
-  <div className="mt-10 text-3xl mx-auto max-w-6xl">
-    <div>Name: container</div>
-    <div>Framework: react-19</div>
+  <div>
+    <Header />
   </div>
 );
 
