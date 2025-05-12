@@ -4,7 +4,6 @@ import { rspack } from "@rspack/core";
 import * as RefreshPlugin from "@rspack/plugin-react-refresh";
 import { ModuleFederationPlugin } from "@module-federation/enhanced/rspack";
 
-
 import { mfConfig } from "./module-federation.config";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -27,6 +26,8 @@ export default defineConfig({
     watchFiles: [path.resolve(__dirname, "src")],
   },
   output: {
+    // Ensure dist directory exists
+    path: path.resolve(__dirname, "dist"),
     // You need to set a unique value that is not equal to other applications
     uniqueName: "details",
     // publicPath must be configured if using manifest
@@ -74,13 +75,14 @@ export default defineConfig({
       },
     ],
   },
-  plugins: [
-    new rspack.HtmlRspackPlugin({
-      template: "./index.html",
-    }),
-    new ModuleFederationPlugin(mfConfig),
-    isDev ? new RefreshPlugin() : null,
-  ].filter(Boolean),
+  // In rspack.config.ts
+plugins: [
+  new rspack.HtmlRspackPlugin({
+    template: "./index.html",
+  }),
+  new ModuleFederationPlugin(mfConfig),
+  isDev ? new RefreshPlugin() : null,
+].filter(Boolean),
   optimization: {
     minimizer: [
       new rspack.SwcJsMinimizerRspackPlugin(),

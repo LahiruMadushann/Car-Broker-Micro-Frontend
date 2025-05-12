@@ -1,5 +1,5 @@
 {
-  "name": "shared",
+  "name": "test",
   "version": "0.0.1",
   "scripts": {
     "start": "cross-env NODE_ENV=development rspack serve",

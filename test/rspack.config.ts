@@ -3,8 +3,6 @@ import { defineConfig } from "@rspack/cli";
 import { rspack } from "@rspack/core";
 import * as RefreshPlugin from "@rspack/plugin-react-refresh";
 import { ModuleFederationPlugin } from "@module-federation/enhanced/rspack";
-
-
 import { mfConfig } from "./module-federation.config";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -20,27 +18,24 @@ export default defineConfig({
   resolve: {
     extensions: ["...", ".ts", ".tsx", ".jsx"],
   },
-
-  devServer: {
-    port: 3000,
+   devServer: {
+    port: 3005,
     historyApiFallback: true,
     watchFiles: [path.resolve(__dirname, "src")],
   },
   output: {
     // You need to set a unique value that is not equal to other applications
-    uniqueName: "container",
+    uniqueName: "test",
     // publicPath must be configured if using manifest
-    publicPath: "http://localhost:3000/",
+    publicPath: "http://localhost:3005/",
   },
-
-  experiments: {
+   experiments: {
     css: true,
   },
-
-  module: {
+   module: {
     rules: [
       {
-        test: /\.(png|jpg|jpeg|gif|svg)$/i,
+        test: /\.svg$/,
         type: "asset",
       },
       {
@@ -78,7 +73,14 @@ export default defineConfig({
     new rspack.HtmlRspackPlugin({
       template: "./index.html",
     }),
-    new ModuleFederationPlugin(mfConfig),
+    new ModuleFederationPlugin({
+      ...mfConfig,
+      // Add additional type generation options
+        dts: {
+        // Generate type definitions for specific files
+        // Adjust or remove invalid properties as needed
+      },
+    }),
     isDev ? new RefreshPlugin() : null,
   ].filter(Boolean),
   optimization: {

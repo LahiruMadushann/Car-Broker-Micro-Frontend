@@ -1,12 +1,11 @@
 import ReactDOM from "react-dom/client";
 
 import "./index.css";
-import Header from "./components/Header";
-import HomePage from "./pages/HomePage";
 
 const App = () => (
-  <div>
-    <HomePage />
+  <div className="mt-10 text-3xl mx-auto max-w-6xl">
+    <div>Name: test</div>
+    <div>Framework: react-19</div>
   </div>
 );
 
