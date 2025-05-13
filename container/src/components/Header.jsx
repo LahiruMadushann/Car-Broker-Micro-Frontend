@@ -1,7 +1,18 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 
 const Header = () => {
+  const navigate = useNavigate();
+
+  const adminNavigation = () => {
+    navigate("/admin-panel");
+  };
+
+  const back = () => {
+    navigate("/");
+  };
+ 
   return (
     <header className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 shadow-lg">
       <div className="container mx-auto flex items-center justify-between h-20 px-6">
@@ -17,10 +28,17 @@ const Header = () => {
         </div>
 
         <div className="flex items-center space-x-6">
-          <button className="flex items-center px-4 py-2 bg-white text-blue-600 font-semibold rounded-lg shadow-md hover:bg-blue-100 transition">
-            <i className="ri-dashboard-line mr-2"></i>
-            Admin Panel
-          </button>
+          {window.location.pathname === "/" ? (
+            <button className="flex items-center px-4 py-2 bg-white text-blue-600 font-semibold rounded-lg shadow-md hover:bg-blue-100 transition" onClick={adminNavigation}>
+              <i className="ri-dashboard-line mr-2"></i>
+              Admin Panel
+            </button>
+          ) : (
+            <button className="flex items-center px-4 py-2 bg-white text-blue-600 font-semibold rounded-lg shadow-md hover:bg-blue-100 transition" onClick={back}>
+              <i className="ri-dashboard-line mr-2"></i>
+              Back
+            </button>
+          )}
           <button className="flex items-center px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition">
             <i className="ri-logout-box-line mr-2"></i>
             Logout
