@@ -1,19 +1,39 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import federation from '@originjs/vite-plugin-federation'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import federation from "@originjs/vite-plugin-federation";
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
- plugins: [
+  plugins: [
+    tailwindcss(),
     react(),
     federation({
+      name: "container",
       remotes: {
-        inventory: 'http://localhost:4173/assets/remoteEntry.js',
-        shared: 'http://localhost:4174/assets/remoteEntry.js',
+        shared: "http://localhost:4173/assets/remoteEntry.js",
       },
-      shared: ['react', 'react-dom'],
-    })
+      shared: {
+        react: {
+          singleton: true,
+          requiredVersion: "^19.1.0",
+        },
+        "react-dom": {
+          singleton: true,
+          requiredVersion: "^19.1.0",
+        },
+        "@reduxjs/toolkit": {
+          singleton: true,
+        },
+        "react-redux": {
+          singleton: true,
+        },
+      },
+    }),
   ],
   build: {
-    target: 'esnext',
-  }
-})
+    modulePreload: false,
+    target: "esnext",
+    minify: false,
+    cssCodeSplit: false,
+  },
+});

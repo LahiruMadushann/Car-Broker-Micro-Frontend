@@ -1,7 +1,214 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import HomePageImage from "../assets/homepage.jpeg";
+import List from "shared/List";
+import Input from "shared/Input";
+import {
+  useGetAllBuyersQuery,
+  useCreateBuyerMutation,
+  useUpdateBuyerMatchingConditionsMutation,
+  useGetMatchingConditionsQuery,
+} from "shared/buyerApi";
+
+class APIErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('API Error Boundary caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 m-4">
+          <h3 className="text-red-800 font-semibold">Something went wrong with the API</h3>
+          <p className="text-red-600 text-sm mt-2">
+            Please check your network connection and try refreshing the page.
+          </p>
+          <button 
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Try Again
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+const BuyerManagement = () => {
+  const [newBuyerName, setNewBuyerName] = useState("");
+
+  const {
+    data: buyers,
+    error: buyersError,
+    isLoading: buyersLoading,
+    refetch: refetchBuyers,
+  } = useGetAllBuyersQuery();
+
+  const {
+    data: matchingConditions,
+    error: conditionsError,
+    isLoading: conditionsLoading,
+  } = useGetMatchingConditionsQuery();
+
+  const [createBuyer, { isLoading: isCreating }] = useCreateBuyerMutation();
+  const [updateMatchingConditions, { isLoading: isUpdating }] =
+    useUpdateBuyerMatchingConditionsMutation();
+
+
+  const handleCreateBuyer = async () => {
+    if (!newBuyerName.trim()) return;
+
+    try {
+      const buyerData = {
+        name: newBuyerName,
+        email: `${newBuyerName.toLowerCase()}@example.com`,
+      };
+
+      const result = await createBuyer(buyerData).unwrap();
+      console.log("Buyer created successfully:", result);
+      setNewBuyerName("");
+    } catch (error) {
+      console.error("Failed to create buyer:", error);
+    }
+  };
+
+  const handleUpdateMatchingConditions = async (buyerId, speciality) => {
+    try {
+      const matchingConditionsData = {
+        condition1: "example condition",
+        condition2: "another condition",
+      };
+
+      const result = await updateMatchingConditions({
+        buyerId,
+        speciality,
+        matchingConditions: matchingConditionsData,
+      }).unwrap();
+
+      console.log("Matching conditions updated:", result);
+    } catch (error) {
+      console.error("Failed to update matching conditions:", error);
+    }
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+      <h2 className="text-3xl font-bold text-gray-800 mb-4">
+        Buyer Management
+      </h2>
+
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold mb-3">Create New Buyer</h3>
+        <div className="flex gap-4">
+          <input
+            type="text"
+            value={newBuyerName}
+            onChange={(e) => setNewBuyerName(e.target.value)}
+            placeholder="Enter buyer name"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={handleCreateBuyer}
+            disabled={isCreating || !newBuyerName.trim()}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
+          >
+            {isCreating ? "Creating..." : "Create Buyer"}
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-xl font-semibold">All Buyers</h3>
+          <button
+            onClick={refetchBuyers}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-300"
+          >
+            Refresh
+          </button>
+        </div>
+
+        {buyersLoading && (
+          <div className="text-center py-4">Loading buyers...</div>
+        )}
+
+        {buyersError && (
+          <div className="text-red-600 py-4">
+            Error loading buyers: {buyersError.message || 'Unknown error'}
+          </div>
+        )}
+
+        {buyers && (
+          <div className="grid gap-4">
+            {buyers.map((buyer) => (
+              <div
+                key={buyer.id}
+                className="flex justify-between items-center p-4 border border-gray-200 rounded-lg"
+              >
+                <div>
+                  <h4 className="font-semibold">{buyer.name}</h4>
+                  <p className="text-gray-600">{buyer.email}</p>
+                  <p className="text-sm text-gray-500">ID: {buyer.id}</p>
+                </div>
+                <button
+                  onClick={() =>
+                    handleUpdateMatchingConditions(buyer.id, "automotive")
+                  }
+                  disabled={isUpdating}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition duration-300"
+                >
+                  {isUpdating ? "Updating..." : "Update Conditions"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold mb-3">Matching Conditions</h3>
+        {conditionsLoading && (
+          <div className="text-center py-4">Loading conditions...</div>
+        )}
+
+        {conditionsError && (
+          <div className="text-red-600 py-4">
+            Error loading conditions: {conditionsError.message || 'Unknown error'}
+          </div>
+        )}
+
+        {matchingConditions && (
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <pre className="text-sm">
+              {JSON.stringify(matchingConditions, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const Details = () => {
+  const [newTodo, setNewTodo] = useState("");
+  const [todos, setTodos] = useState([]);
+
+  const onSubmit = () => {
+    setTodos((prev) => [...prev, newTodo]);
+    setNewTodo("");
+  };
+
   return (
     <div className="font-sans p-6 bg-gray-100 text-gray-900">
       <div className="max-w-6xl mx-auto">
@@ -17,6 +224,11 @@ const Details = () => {
           Welcome to the Car Broker Admin Panel. Manage your platform
           efficiently with our intuitive tools and features.
         </p>
+
+        <APIErrorBoundary>
+          <BuyerManagement />
+        </APIErrorBoundary>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
           <div className="p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition duration-300">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -52,6 +264,11 @@ const Details = () => {
               Manage Users
             </button>
           </div>
+        </div>
+
+        <div className="mt-8">
+          <Input value={newTodo} onChange={setNewTodo} onSubmit={onSubmit} />
+          <List items={todos} />
         </div>
       </div>
     </div>
